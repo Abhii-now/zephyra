@@ -6,9 +6,13 @@ import {
   ModuleRegistry,
   themeAlpine,
 } from "ag-grid-enterprise";
+import { useSelector } from "react-redux";
 ModuleRegistry.registerModules([AllEnterpriseModule]);
 
-const FileGrid = ({ files }) => {
+const FileGrid = () => {
+  const selectFiles = (state) => state.files;
+  const files = useSelector(selectFiles);
+
   const columns = [
     { headerName: "File Name", field: "name" },
     { headerName: "File Size (bytes)", field: "size" },

@@ -1,8 +1,11 @@
 import { Button } from "react-bootstrap";
 import React, { useRef, useState } from "react";
 import { encryptFile, generateKey } from "cryptoUtils";
+import { addFiles } from "features/files/filesSlice";
+import { useDispatch } from "react-redux";
 
-const FileUpload = ({ onFileUpload }) => {
+const FileUpload = () => {
+  const dispatch = useDispatch();
   const fileInputRef = useRef(null);
   // const [key, setKey] = useState(null);
 
@@ -10,8 +13,11 @@ const FileUpload = ({ onFileUpload }) => {
     fileInputRef.current.click();
   };
   const handleFileChange = async (event) => {
-    const files = event.target.files;
-    // let encryptionKey = key;
+    const files = Array.from(event.target.files).map((file) => ({
+      name: file.name,
+      size: file.size,
+      lastModifiedDate: file.lastModifiedDate.toISOString(), // Convert to serializable format
+    })); // let encryptionKey = key;
 
     // if (!key) {
     //   encryptionKey = await generateKey();
@@ -30,7 +36,7 @@ const FileUpload = ({ onFileUpload }) => {
     //   })
     // );
 
-    onFileUpload(files);
+    dispatch(addFiles(files));
   };
   return (
     <div className="file-upload" data-testid="file-upload-input">
