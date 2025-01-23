@@ -1,7 +1,7 @@
 import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Auth0Provider } from "@auth0/auth0-react";
@@ -12,13 +12,13 @@ root.render(
   <React.StrictMode>
     <Router>
       <Auth0Provider
-        domain="dev-u3pvqte1l7ripqyb.us.auth0.com"
-        clientId="POGOnHM3fDweGwJetoiqcDCHEEfS4dM1"
+        domain={process.env.REACT_APP_AUTH0_DOMAIN}
+        clientId={process.env.REACT_APP_AUTH0_CLIENT_ID}
         authorizationParams={{
           redirect_uri: window.location.origin,
         }}
       >
-        <AuthWrapper />
+      <AuthWrapper />
       </Auth0Provider>
     </Router>
   </React.StrictMode>
