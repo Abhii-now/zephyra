@@ -31,6 +31,7 @@ export async function encryptFiles(files) {
         encryptedBuffer,
         iv,
         key,
+        type: file.type,
       };
     })
   );

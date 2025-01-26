@@ -1,5 +1,5 @@
 import { Button } from "react-bootstrap";
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { arrayBufferToHex, encryptFiles } from "utils/cryptoUtils";
 import { addFiles } from "features/files/filesSlice";
 import { useDispatch } from "react-redux";
@@ -12,9 +12,9 @@ const FileUpload = () => {
   };
   const handleFileChange = async (event) => {
     const files = Array.from(event.target.files);
+    console.log(files);
     const encryptedFiles = await encryptFiles(files);
     const uploadedFiles = await uploadEncryptedFiles(encryptedFiles);
-    console.log(uploadedFiles);
     dispatch(addFiles(uploadedFiles));
   };
   const uploadEncryptedFiles = async (encryptedFiles) => {
@@ -28,14 +28,21 @@ const FileUpload = () => {
         formData.append("dateModified", file.dateModified);
         const keyBuffer = await window.crypto.subtle.exportKey("raw", file.key);
         formData.append("key", arrayBufferToHex(keyBuffer)); // Convert key to hex string
+        formData.append("fileType", file.type); // Append fileType
 
         const response = await fetch("http://127.0.0.1:8000/mynewapp/upload/", {
           method: "POST",
           body: formData,
         });
         if (response.ok) {
-          console.log("Uploaded file:", file.name);
-          uploadedFiles.push(file);
+          const responseData = await response.json();
+          console.log("Uploaded file:", responseData.name);
+          uploadedFiles.push({
+            name: responseData.name,
+            iv: responseData.iv,
+            tag: responseData.tag,
+            uploaded_at: responseData.uploaded_at,
+          });
         } else {
           console.error("Failed to upload file:", file.name);
         }
@@ -43,9 +50,27 @@ const FileUpload = () => {
     );
     return uploadedFiles;
   };
+  const fetchFiles = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/mynewapp/files/");
+      if (response.ok) {
+        const files = await response.json();
+        console.log(files.files);
+        dispatch(addFiles(files.files));
+      } else {
+        console.error("Failed to fetch files");
+      }
+    } catch (error) {
+      console.error("Error fetching files:", error);
+    }
+  };
 
+  useEffect(() => {
+    console.log("HERE");
+    fetchFiles();
+  }, []);
   return (
-    <div className="file-upload" data-testid="file-upload-input">
+    <span className="file-upload" data-testid="file-upload-input">
       <input
         type="file"
         multiple
@@ -60,7 +85,7 @@ const FileUpload = () => {
       >
         Upload Files
       </Button>
-    </div>
+    </span>
   );
 };
 
