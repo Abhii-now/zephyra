@@ -19,6 +19,8 @@ root.render(
         clientId={process.env.REACT_APP_AUTH0_CLIENT_ID}
         authorizationParams={{
           redirect_uri: window.location.origin,
+          audience: "http://127.0.0.1:8000/",
+          scope: "",
         }}
       >
         <AuthWrapper />

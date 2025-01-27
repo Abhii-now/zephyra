@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { arrayBufferToHex, encryptFiles } from "utils/cryptoUtils";
 import { addFiles } from "features/files/filesSlice";
 import { useDispatch } from "react-redux";
+import customFetch from "utils/customFetch";
 
 const FileUpload = () => {
   const dispatch = useDispatch();
@@ -30,10 +31,13 @@ const FileUpload = () => {
         formData.append("key", arrayBufferToHex(keyBuffer)); // Convert key to hex string
         formData.append("fileType", file.type); // Append fileType
 
-        const response = await fetch("http://127.0.0.1:8000/mynewapp/upload/", {
-          method: "POST",
-          body: formData,
-        });
+        const response = await customFetch(
+          "http://127.0.0.1:8000/mynewapp/upload/",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
         if (response.ok) {
           const responseData = await response.json();
           console.log("Uploaded file:", responseData.name);
@@ -52,7 +56,9 @@ const FileUpload = () => {
   };
   const fetchFiles = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/mynewapp/files/");
+      const response = await customFetch(
+        "http://127.0.0.1:8000/mynewapp/files/"
+      );
       if (response.ok) {
         const files = await response.json();
         console.log(files.files);
@@ -66,7 +72,6 @@ const FileUpload = () => {
   };
 
   useEffect(() => {
-    console.log("HERE");
     fetchFiles();
   }, []);
   return (
