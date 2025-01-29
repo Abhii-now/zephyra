@@ -2,9 +2,8 @@ import customFetch from "./customFetch";
 
 // filepath: /Users/abhinavjain/dev/zephyra/zephyra/src/cryptoUtils.js
 export async function generateKey() {
-  // Generate a random key hitting get request to http://127.0.0.1:8000/mynewapp/generate-aes-key/
   const response = await customFetch(
-    "http://127.0.0.1:8000/mynewapp/generate-aes-key/"
+    `${process.env.REACT_APP_API_BASE_URL}/mynewapp/mynewapp/generate-aes-key/`
   );
   console.log(response);
   const data = await response.json();

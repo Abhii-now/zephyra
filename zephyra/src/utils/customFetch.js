@@ -1,9 +1,11 @@
 import { store } from "app/store";
 
-const customFetch = async (url, options = {}) => {
+const customFetch = async (url, options = {}, user = false) => {
   const state = store.getState();
-  const token = state.auth.accessToken;
-  console.log(token);
+  // console.log(state.auth.userToken);
+  // console.log("access " + state.auth.accessToken);
+  const token = user ? state.auth.userToken : state.auth.accessToken;
+  // if (user) console.log(token);
   const headers = {
     ...options.headers,
     Authorization: `Bearer ${token}`,
