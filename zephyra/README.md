@@ -1,70 +1,130 @@
-# Getting Started with Create React App
+# Zephyra
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Zephyra is a powerful and flexible tool designed to streamline your development workflow. This README provides an overview of the project, installation instructions, usage guidelines, and contribution information.
 
-## Available Scripts
+## Table of Contents
 
-In the project directory, you can run:
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
-### `npm start`
+## Installation
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+To install Zephyra, follow these steps:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+1. Clone the repository:
+	```bash
+	git clone https://github.com/yourusername/zephyra.git
+	```
+2. Navigate to the project directory:
+	```bash
+	cd zephyra
+	```
+3. Install the dependencies:
+	```bash
+	npm install
+	```
 
-### `npm test`
+## Docker Setup
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+To run Zephyra using Docker, follow these steps:
 
-### `npm run build`
+1. Build the Docker image:
+	```bash
+	docker build -t zephyra .
+	```
+2. Run the Docker container:
+	```bash
+	docker run -p 3000:3000 zephyra
+	```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Nginx Configuration
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+To use Nginx as a reverse proxy for Zephyra, add the following configuration to your Nginx configuration file:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```nginx
+server {
+	listen 80;
+	server_name yourdomain.com;
 
-### `npm run eject`
+	location / {
+		proxy_pass http://localhost:3000;
+		proxy_set_header Host $host;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+	}
+}
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Using AES for Encryption
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Zephyra supports AES encryption for securing sensitive data. To use AES encryption, follow these steps:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Install the necessary library:
+	```bash
+	npm install crypto-js
+	```
+2. Use the following code snippet to encrypt and decrypt data:
+	```javascript
+	const CryptoJS = require('crypto-js');
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+	// Encrypt
+	const ciphertext = CryptoJS.AES.encrypt('your data', 'secret key').toString();
 
-## Learn More
+	// Decrypt
+	const bytes = CryptoJS.AES.decrypt(ciphertext, 'secret key');
+	const originalText = bytes.toString(CryptoJS.enc.Utf8);
+	```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## SSL/TLS Setup
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+To secure your application with SSL/TLS, follow these steps:
 
-### Code Splitting
+1. Obtain an SSL certificate from a trusted Certificate Authority (CA).
+2. Configure Nginx to use the SSL certificate:
+	```nginx
+	server {
+		listen 443 ssl;
+		server_name yourdomain.com;
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+		ssl_certificate /path/to/your/certificate.crt;
+		ssl_certificate_key /path/to/your/private.key;
 
-### Analyzing the Bundle Size
+		location / {
+			proxy_pass http://localhost:3000;
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
+		}
+	}
+	```
+3. Redirect HTTP traffic to HTTPS:
+	```nginx
+	server {
+		listen 80;
+		server_name yourdomain.com;
+		return 301 https://$host$request_uri;
+	}
+	```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+For more detailed instructions, refer to the [documentation](docs/DOCKER_SETUP.md).
 
-### Making a Progressive Web App
+## Usage
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+To start using Zephyra, run the following command:
+```bash
+npm start
+```
 
-### Advanced Configuration
+For detailed usage instructions, refer to the [documentation](docs/USAGE.md).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Contributing
 
-### Deployment
+We welcome contributions! Please read our [contributing guidelines](CONTRIBUTING.md) to get started.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## License
 
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
