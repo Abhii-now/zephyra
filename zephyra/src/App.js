@@ -1,75 +1,82 @@
-import FileGrid from "FileGrid/FileGrid";
 import "./App.css";
-import FileUpload from "./FileUpload/FileUpload";
+import FileUpload from "./components/FileUpload/FileUpload";
 import React, { useEffect, useState } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  redirect,
-} from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
-import FileDownload from "FileDownload/FileDownload";
+import FileDownload from "components/FileDownload/FileDownload";
 import AlertNotification from "AlertNotification";
-import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
-import { setAccessToken } from "features/auth/authSlice";
+import { useAuth0 } from "@auth0/auth0-react";
+import { setAccessToken, setUserToken } from "features/auth/authSlice";
 import { useDispatch } from "react-redux";
-import { store } from "app/store";
-import { jwtDecode } from "jwt-decode";
+import FileView from "components/FileView/FileView";
+import FileGrid from "FileGrid/FileGrid";
+import { fetchMetaData, fetchUserToken } from "utils/authUtil";
+import { Button } from "react-bootstrap";
 
 function App() {
-  const { getAccessTokenSilently, user } = useAuth0();
+  const {
+    loginWithRedirect,
+    logout,
+    getAccessTokenSilently,
+    user,
+    isAuthenticated,
+  } = useAuth0();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [permissions, setPermissions] = useState([]);
+  const [userData, setUserData] = useState([]);
 
   useEffect(() => {
     const getUserMetadata = async () => {
-      console.log(user);
-      const userToken = await getAccessTokenSilently({
-        authorizationParams: {
-          scope: "read:users read:current_user update:current_user_metadata",
-          audience: "https://dev-u3pvqte1l7ripqyb.us.auth0.com/api/v2/",
-        },
-        detailedResponse: true,
-      });
-      const userDetailsByIdUrl = `https://${process.env.REACT_APP_AUTH0_DOMAIN}/api/v2/users/${user.sub}`;
-
-      const metadataResponse = await fetch(userDetailsByIdUrl, {
-        headers: {
-          Authorization: `Bearer ${userToken.access_token}`,
-        },
-      });
-      const token = await getAccessTokenSilently();
-      const metadata = await metadataResponse.json();
-      setPermissions(metadata.app_metadata.roles);
-      dispatch(setAccessToken(token));
-      setLoading(false);
+      try {
+        const data = await fetchUserToken();
+        const userToken = data.access_token;
+        dispatch(setUserToken(userToken));
+        const token = await getAccessTokenSilently();
+        const metadata = await fetchMetaData(userToken, user.sub);
+        setUserData(metadata);
+        setPermissions(metadata.app_metadata.roles);
+        dispatch(setAccessToken(token));
+        if (userToken) setLoading(false);
+      } catch (error) {
+        console.log(error.message);
+      }
     };
-    // const state = store.getState();
-
-    // const token = state.auth.accessToken;
     getUserMetadata();
-  }, [getAccessTokenSilently, dispatch]);
+  }, [getAccessTokenSilently, dispatch, isAuthenticated, user]);
   if (loading) {
     return <div>Loading...</div>;
   }
   return (
-    <div className="App">
-      <AlertNotification />
-      <Routes>
-        <Route
-          path="/:token?"
-          element={
-            <div>
-              {permissions.includes("Regular User") && <FileDownload />}
-              {permissions.includes("Regular User") && <FileUpload />}
-              <FileGrid />
-            </div>
-          }
-        />
-      </Routes>
-    </div>
+    <>
+      <div className="App">
+        <AlertNotification />
+
+        <Routes>
+          <Route
+            path="/:token"
+            element={<FileView fileData={undefined} userData={userData} />}
+          />
+          <Route
+            path="/"
+            element={
+              <>
+                {permissions.includes("Regular User") && <FileDownload />}
+                {permissions.includes("Regular User") && <FileUpload />}
+                {permissions.includes("Regular User") && <FileGrid />}
+              </>
+            }
+          />
+        </Routes>
+        <div className="login-logout">
+          {!isAuthenticated ? (
+            <Button onClick={() => loginWithRedirect()}>Login</Button>
+          ) : (
+            <Button onClick={() => logout()}>Logout</Button>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 
